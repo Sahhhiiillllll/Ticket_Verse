@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Secure Ticket Verse checkout with PayPal. Complete your booking in INR — merchant-ready flow." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Checkout &amp; Pay — Ticket Verse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #0d1118;
+      --card: rgba(255,255,255,0.06);
+      --gold: #d4a843;
+      --gold2: #f0c96b;
+      --text: #e8ecf4;
+      --muted: #7a8499;
+      --border: #1e2a42;
+      --teal: #00c9b1;
+      --radius: 14px;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'DM Sans', sans-serif;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      /* Header (matches landing snapshot) */
+      --nav-bar-bg: rgba(5, 7, 10, 0.94);
+      --nav-gold: #e5b860;
+      --nav-link: #9ca3af;
+      --nav-link-hover: #ffffff;
+      --nav-cta-text: #000000;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ═══ Same header as index (snapshot palette) ═══ */
+    #navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      background: var(--nav-bar-bg);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+    #navbar.scrolled {
+      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.55);
+    }
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      text-decoration: none;
+    }
+    .nav-logo:hover { text-decoration: none; color: #ffffff; }
+    .nav-logo span { color: var(--nav-gold); }
+    .nav-logo .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(145deg, var(--nav-gold), #c9a050);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+    .nav-links a {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--nav-link);
+      border-radius: 8px;
+      transition: var(--transition);
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: var(--nav-gold);
+      transform: translateX(-50%);
+      transition: var(--transition);
+      border-radius: 2px;
+    }
+    .nav-links a:hover {
+      color: var(--nav-link-hover);
+      text-decoration: none;
+    }
+    .nav-links a:hover::after { width: 60%; }
+    .nav-links a.active {
+      color: var(--nav-gold);
+    }
+    .nav-links a.active::after { width: 60%; }
+    .nav-cta {
+      background: var(--nav-gold) !important;
+      color: var(--nav-cta-text) !important;
+      font-weight: 700 !important;
+      padding: 10px 22px !important;
+      border-radius: 999px !important;
+    }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(229, 184, 96, 0.4) !important;
+      text-decoration: none;
+      color: var(--nav-cta-text) !important;
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--nav-link-hover);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: rgba(5, 7, 10, 0.98);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px 28px;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 999;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--nav-link);
+      border-radius: 10px;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .mobile-menu a:hover {
+      color: var(--nav-gold);
+      background: var(--card);
+      text-decoration: none;
+    }
+    @media (max-width: 768px) {
+      .nav-inner { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    .page-wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 96px 20px 60px;
+    }
+    .checkout-back {
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+    }
+    .checkout-back a {
+      color: var(--muted);
+      border: 1px solid var(--border);
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 999px;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .checkout-back a:hover {
+      border-color: var(--nav-gold);
+      color: var(--nav-gold);
+      text-decoration: none;
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      margin-bottom: 8px;
+    }
+    .sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 28px; }
+    .paypal-block {
+      margin-bottom: 32px;
+      padding: 24px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 60px rgba(168,85,247,0.08);
+    }
+    .paypal-block h2 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+    .paypal-note {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.55;
+    }
+    .paypal-note code { font-size: 0.78rem; background: rgba(0,0,0,0.35); padding: 2px 6px; border-radius: 4px; }
+    #paypalSetupWarn {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(232,121,249,0.35);
+      background: rgba(168,85,247,0.12);
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    #paypal-button-container { min-height: 48px; }
+    .summary {
+      background: rgba(255,255,255,0.045);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 32px;
+      display: grid;
+      gap: 14px;
+    }
+    .summary-top {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+    .ref-pill {
+      font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--teal); font-weight: 700;
+    }
+    .ref-code {
+      font-family: ui-monospace, monospace;
+      font-size: 1.15rem; color: var(--gold); margin-top: 4px;
+    }
+    .total-block { text-align: right; }
+    .total-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .total-amt {
+      font-family: var(--font-display);
+      font-size: 2rem; font-weight: 700;
+      color: var(--gold2);
+      line-height: 1.1;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px 20px;
+      font-size: 0.88rem;
+    }
+    .sg-label { color: var(--muted); display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .pay-section {
+      margin-bottom: 28px;
+    }
+    .pay-section h2 {
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .pay-section h2 span { font-size: 1.1rem; }
+    .pay-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .pay-tile {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      cursor: pointer;
+      color: var(--text);
+      font-family: var(--font-body);
+      transition: 0.25s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      text-align: center;
+      min-height: 108px;
+    }
+    .pay-tile:hover {
+      border-color: rgba(212,168,67,0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    }
+    .pay-tile:focus-visible {
+      outline: 2px solid var(--gold); outline-offset: 2px;
+    }
+    .pay-sym {
+      font-size: 1.85rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+    }
+    .pay-name { font-size: 0.82rem; font-weight: 600; line-height: 1.25; }
+    .pay-note { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .bank-row .pay-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .bank-row .pay-tile { min-height: 88px; padding: 12px 8px; }
+    .bank-row .pay-sym { font-size: 1.35rem; }
+    .bank-row .pay-name { font-size: 0.75rem; }
+    .toast-demo {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--card); border: 1px solid var(--gold);
+      padding: 14px 22px; border-radius: 12px; font-size: 0.9rem;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+      opacity: 0; transition: 0.35s ease;
+      z-index: 1000; max-width: calc(100% - 32px); text-align: center;
+    }
+    .toast-demo.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .empty-state {
+      text-align: center; padding: 48px 20px; color: var(--muted);
+    }
+    .empty-state a { display: inline-block; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <nav id="navbar" role="navigation" aria-label="Main Navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon" aria-hidden="true">🎟</div>
+        Ticket <span>Verse</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="index.html#home">Home</a></li>
+        <li><a href="index.html#events">Events</a></li>
+        <li><a href="my-tickets.html">My Tickets</a></li>
+        <li><a href="index.html#categories">How It Works</a></li>
+        <li><a href="index.html#booking" class="active">Booking</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="index.html#booking" class="nav-cta">Book Now →</a></li>
+      </ul>
+      <button type="button" class="hamburger" id="payHamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="payMobileMenu" role="navigation" aria-label="Mobile menu">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#events">Events</a>
+    <a href="index.html#categories">How It Works</a>
+    <a href="index.html#booking">Booking</a>
+    <a href="index.html#contact">Contact</a>
+    <a href="index.html#booking" class="nav-cta" style="margin-top:8px;text-align:center">Book Now →</a>
+  </div>
+
+  <div class="page-wrap">
+    <p class="checkout-back"><a href="index.html#booking">← Edit booking</a></p>
+
+    <div id="mainContent">
+      <h1>Choose how to pay</h1>
+      <p class="sub">Select a payment method. Your booking is held until payment completes.</p>
+    </div>
+
+    <div id="summaryBlock" class="summary" hidden></div>
+    <div id="paypalBlock" class="paypal-block" hidden>
+      <h2>Pay with PayPal</h2>
+      <p class="paypal-note" id="paypalMerchantLine"></p>
+      <div id="paypal-button-container"></div>
+      <p id="paypalSetupWarn" style="display: none;"></p>
+    </div>
+    <div class="paypal-block" id="rzpBlock">
+      <h2>Pay with Razorpay</h2>
+      <p class="paypal-note">UPI, QR, cards, netbanking, wallets. Enter UPI ID to pay via collect; or leave blank to choose inside checkout.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:14px 0 18px">
+        <input id="upiVpa" type="text" placeholder="yourname@upi (optional)" style="flex:1;min-width:240px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);backdrop-filter:blur(12px);color:var(--text);font-family:var(--font-body);outline:none" />
+        <button id="rzpPayBtn" type="button" style="padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--nav-gold),#f0c96b);color:#0a0a0a;font-weight:800;cursor:pointer;transition:var(--transition);flex:0 0 auto">
+          Pay with UPI / Cards / NetBanking (Razorpay)
+        </button>
+      </div>
+      <p class="paypal-note" style="margin:0">Note: For production security, payment signature verification should be done server-side before issuing final tickets.</p>
+    </div>
+    <div id="methodsRoot" hidden></div>
+
+    <div id="emptyState" class="empty-state" hidden>
+      <p>No checkout session found. Start a booking from the home page.</p>
+      <a href="index.html#booking">Go to Book Tickets</a>
+    </div>
+  </div>
+
+  <div class="toast-demo" id="demoToast" role="status"></div>
+
+  <script src="site-config.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    (function () {
+      var KEY = 'TV_CHECKOUT';
+      var raw = sessionStorage.getItem(KEY);
+      var data;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        data = null;
+      }
+      if (!data || typeof data.ref !== 'string' || typeof data.total !== 'number') {
+        document.getElementById('emptyState').hidden = false;
+        document.getElementById('mainContent').querySelector('h1').textContent = 'Checkout';
+        document.getElementById('mainContent').querySelector('.sub').textContent = '';
+        var cb = document.querySelector('.checkout-back');
+        if (cb) cb.style.display = 'none';
+        return;
+      }
+      var esc = function (s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      };
+
+      var summary = document.getElementById('summaryBlock');
+      summary.hidden = false;
+      summary.innerHTML =
+        '<div class="summary-top">' +
+        '<div><div class="ref-pill">Booking reference</div><div class="ref-code">' + esc(data.ref) + '</div></div>' +
+        '<div class="total-block"><div class="total-label">Amount payable</div><div class="total-amt">' + esc(data.totalDisplay) + '</div></div>' +
+        '</div>' +
+        '<div class="summary-grid">' +
+        '<div><span class="sg-label">Event</span>' + esc(data.eventTitle) + '</div>' +
+        '<div><span class="sg-label">Tickets</span>' + esc(String(data.ticketCount)) + ' × ₹' + esc(String(data.unitPrice.toLocaleString('en-IN'))) + '</div>' +
+        '<div><span class="sg-label">Guest</span>' + esc(data.fname + ' ' + data.lname) + '</div>' +
+        '<div><span class="sg-label">Email</span>' + esc(data.email) + '</div>' +
+        (data.phone ? '<div><span class="sg-label">Phone</span>' + esc(data.phone) + '</div>' : '') +
+        '</div>';
+
+      var merLine = document.getElementById('paypalMerchantLine');
+      if (merLine) {
+        merLine.innerHTML =
+          'Live payments route through your PayPal app. Prefer funds to land in your business wallet for <strong>' +
+          esc(window.TV_MERCHANT_EMAIL || 'your PayPal login') +
+          '</strong>. Put your REST <code>client-id</code> in <code>site-config.js</code> to activate the button.';
+      }
+
+      var pb = document.getElementById('paypalBlock');
+      if (pb) pb.hidden = false;
+
+      // Razorpay (UPI / Cards / NetBanking / Wallets) — real gateway
+      function initRazorpay() {
+        var keyId = String(window.TV_RAZORPAY_KEY_ID || '').trim();
+        var warn = document.getElementById('paypalSetupWarn');
+        var t = document.getElementById('demoToast');
+        var btn = document.getElementById('rzpPayBtn');
+        if (!btn) return;
+
+        if (!keyId || keyId === 'PASTE_YOUR_RAZORPAY_KEY_ID_HERE') {
+          btn.disabled = true;
+          btn.textContent = 'Set Razorpay Key ID to enable';
+          if (warn) {
+            warn.style.display = 'block';
+            warn.innerHTML =
+              '<strong>Razorpay is not configured yet.</strong> Put your <code>Key ID</code> in <code>site-config.js</code> as <code>TV_RAZORPAY_KEY_ID</code>, and set <code>RAZORPAY_KEY_ID</code> + <code>RAZORPAY_KEY_SECRET</code> in your <code>.env</code> for the backend.';
+          }
+          return;
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Pay with UPI / Cards / NetBanking (Razorpay)';
+
+        btn.addEventListener('click', async function () {
+          btn.disabled = true;
+          btn.textContent = 'Creating secure order…';
+          try {
+            var upiEl = document.getElementById('upiVpa');
+            var vpa = upiEl ? String(upiEl.value || '').trim() : '';
+
+            var resp = await fetch('/api/razorpay/order', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                amountInr: Number(data.total),
+                receipt: data.ref,
+                notes: { eventId: data.eventId || '', email: data.email || '' },
+              }),
+            });
+            var j = await resp.json();
+            if (!resp.ok) throw new Error(j && j.error ? j.error : 'Order creation failed');
+
+            var options = {
+              key: keyId,
+              amount: j.amount,
+              currency: j.currency,
+              name: 'Ticket Verse',
+              description: data.eventTitle + ' — ' + data.ref,
+              order_id: j.orderId,
+              prefill: {
+                name: (data.fname || '') + ' ' + (data.lname || ''),
+                email: data.email || '',
+                contact: data.phone || '',
+                vpa: vpa || undefined
+              },
+              notes: { eventId: data.eventId || '', bookingRef: data.ref },
+              theme: { color: '#e5b860' },
+              handler: async function (response) {
+                // Payment succeeded — verify signature with backend before issuing ticket
+                try {
+                  var vr = await fetch('/api/razorpay/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                    }),
+                  });
+                  var vj = await vr.json();
+                  if (!vr.ok || !vj || !vj.ok) throw new Error((vj && vj.error) || 'Signature verification failed');
+                  saveTicketThenRedirect({
+                    provider: 'Razorpay',
+                    paymentId: response.razorpay_payment_id || '',
+                    orderId: response.razorpay_order_id || '',
+                  });
+                } catch (e3) {
+                  if (t) {
+                    t.textContent = 'Verification failed: ' + (e3 && e3.message ? e3.message : String(e3));
+                    t.classList.add('show');
+                  }
+                  btn.disabled = false;
+                  btn.textContent = 'Pay with UPI / Cards / NetBanking (Razorpay)';
+                }
+              },
+              modal: {
+                ondismiss: function () {
+                  btn.disabled = false;
+                  btn.textContent = 'Pay with UPI / Cards / NetBanking (Razorpay)';
+                }
+              }
+            };
+
+            // If VPA present, hint Razorpay to open UPI collect
+            if (vpa) {
+              options.method = { upi: true };
+            }
+
+            // @ts-ignore
+            var rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (resp2) {
+              if (t) {
+                t.textContent = 'Payment failed: ' + (resp2 && resp2.error && resp2.error.description ? resp2.error.description : 'Unknown');
+                t.classList.add('show');
+              }
+              btn.disabled = false;
+              btn.textContent = 'Pay with UPI / Cards / NetBanking (Razorpay)';
+            });
+            rzp.open();
+          } catch (e) {
+            if (t) {
+              t.textContent = 'Razorpay error: ' + (e && e.message ? e.message : String(e));
+              t.classList.add('show');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Pay with UPI / Cards / NetBanking (Razorpay)';
+          }
+        });
+      }
+
+      function saveTicketThenRedirect(details) {
+        var tickets = [];
+        try {
+          tickets = JSON.parse(localStorage.getItem('TV_TICKETS') || '[]');
+        } catch (e2) {}
+        var provider = details && details.provider ? String(details.provider) : 'PayPal';
+        tickets.unshift({
+          ref: data.ref,
+          eventTitle: data.eventTitle,
+          eventId: data.eventId,
+          ticketCount: data.ticketCount,
+          unitPrice: data.unitPrice,
+          total: data.total,
+          fname: data.fname,
+          lname: data.lname,
+          email: data.email,
+          paidVia: provider,
+          paypalOrderId: provider === 'PayPal' && details && details.id ? details.id : '',
+          razorpayPaymentId: provider === 'Razorpay' && details && details.paymentId ? details.paymentId : '',
+          razorpayOrderId: provider === 'Razorpay' && details && details.orderId ? details.orderId : '',
+          paidAt: new Date().toISOString(),
+        });
+        localStorage.setItem('TV_TICKETS', JSON.stringify(tickets));
+        sessionStorage.removeItem('TV_CHECKOUT');
+        window.location.href = 'my-tickets.html?paid=1';
+      }
+
+      function initPayPal() {
+        var cid = String(window.TV_PAYPAL_CLIENT_ID || '').trim();
+        var currency = String(window.TV_PAYPAL_CURRENCY || 'USD').trim() || 'USD';
+        var fx = Number(window.TV_FX_INR_PER_USD || 83);
+        var warn = document.getElementById('paypalSetupWarn');
+        var container = document.getElementById('paypal-button-container');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        var invalid = !cid || cid === 'PASTE_YOUR_PAYPAL_CLIENT_ID_HERE' || cid.length < 20;
+        if (invalid) {
+          if (warn) {
+            warn.style.display = 'block';
+            warn.innerHTML =
+              '<strong>PayPal is not configured yet.</strong> Add your REST <code>client-id</code> to <code>site-config.js</code> as <code>TV_PAYPAL_CLIENT_ID</code>.';
+          }
+          return;
+        }
+        if (warn) warn.style.display = 'none';
+
+        var amtInr = Number(data.total);
+        if (!Number.isFinite(amtInr) || amtInr <= 0) return;
+        var amtPay = amtInr;
+        if (currency !== 'INR') {
+          // Convert display/charge for PayPal when INR isn't supported for the account.
+          var rate = Number.isFinite(fx) && fx > 0 ? fx : 83;
+          amtPay = amtInr / rate;
+        }
+        var valueStr = Number(amtPay).toFixed(2);
+
+        // Update summary total display to match PayPal currency for clarity.
+        var totalEl = document.querySelector('.total-amt');
+        if (totalEl) {
+          var sym = currency === 'USD' ? '$' : currency + ' ';
+          totalEl.textContent = sym + Number(amtPay).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Ensure we don't keep multiple SDK tags around during retries.
+        var existing = document.getElementById('paypal-sdk');
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+        var scr = document.createElement('script');
+        scr.id = 'paypal-sdk';
+        scr.src =
+          'https://www.paypal.com/sdk/js?client-id=' +
+          encodeURIComponent(cid) +
+          '&components=buttons&currency=' +
+          encodeURIComponent(currency) +
+          '&intent=capture&debug=true';
+        scr.onload = function () {
+          if (typeof paypal === 'undefined') {
+            if (warn) {
+              warn.style.display = 'block';
+              warn.textContent = 'PayPal SDK loaded but paypal object is missing. Try disabling ad-blockers for localhost.';
+            }
+            return;
+          }
+          paypal
+            .Buttons({
+              style: { layout: 'vertical', shape: 'rect', label: 'pay' },
+              createOrder: function (_, actions) {
+                try {
+                  return actions.order.create({
+                    purchase_units: [
+                      {
+                        reference_id: data.ref,
+                        description: data.eventTitle + ' — ' + data.ref,
+                        custom_id: data.eventId || '',
+                        amount: {
+                          currency_code: currency,
+                          value: valueStr,
+                        },
+                      },
+                    ],
+                  });
+                } catch (err) {
+                  console.error('PayPal createOrder error', err);
+                  throw err;
+                }
+              },
+              onApprove: function (_, actions) {
+                return actions.order.capture().then(function (details) {
+                  saveTicketThenRedirect({ provider: 'PayPal', id: details && details.id ? details.id : '' });
+                });
+              },
+              onError: function (err) {
+                console.error('PayPal Buttons error', err);
+                var t = document.getElementById('demoToast');
+                if (t) {
+                  var msg = '';
+                  try {
+                    msg = err && typeof err === 'object' ? JSON.stringify(err) : String(err || '');
+                  } catch (e) {}
+                  t.textContent =
+                    'PayPal could not complete. ' +
+                    (msg ? ('Details: ' + msg + '. ') : '') +
+                    'ClientID(…' +
+                    cid.slice(-6) +
+                    '), currency=' +
+                    currency +
+                    '.';
+                  t.classList.add('show');
+                }
+                // No auto-currency fallback needed now; USD is default via site-config.js.
+              },
+            })
+            .render(container);
+        };
+        scr.onerror = function () {
+          if (warn) {
+            warn.style.display = 'block';
+            warn.textContent = 'Failed to load PayPal SDK. Check your network or ad-blockers.';
+          }
+        };
+        document.body.appendChild(scr);
+      }
+
+      initPayPal();
+      initRazorpay();
+
+      var sections = [
+        {
+          title: 'Cards',
+          icon: '💳',
+          items: [
+            { sym: '💳', name: 'Credit / Debit Card', note: 'Visa, MC, RuPay' },
+            { sym: 'Ⓡ', name: 'RuPay', note: 'Domestic network', style: 'font-weight:800;color:#097939;font-family:sans-serif' },
+            { sym: 'Ⓜ️', name: 'Mastercard', note: '' },
+            { sym: '✔️', name: 'Visa', note: '' },
+            { sym: '🅰️', name: 'American Express', note: '' },
+          ],
+        },
+        {
+          title: 'UPI',
+          icon: '📲',
+          items: [
+            { sym: 'G', name: 'Google Pay', note: '', style: 'font-weight:800;color:#4285F4;font-family:sans-serif' },
+            { sym: 'Pe', name: 'PhonePe', note: '', style: 'font-weight:800;color:#5f259f;font-size:1rem' },
+            { sym: 'Py', name: 'Paytm UPI', note: '', style: 'font-weight:800;color:#00BAF2;font-size:1rem' },
+            { sym: '📲', name: 'BHIM UPI', note: '' },
+            { sym: '▣', name: 'Scan QR', note: 'Any UPI app' },
+          ],
+        },
+        {
+          title: 'Net banking',
+          icon: '🏦',
+          bankRow: true,
+          items: [
+            { sym: '🔷', name: 'HDFC Bank', note: '' },
+            { sym: '🟠', name: 'ICICI Bank', note: '' },
+            { sym: '🔵', name: 'SBI', note: '' },
+            { sym: '◆', name: 'Axis Bank', note: '' },
+            { sym: '◇', name: 'Kotak', note: '' },
+            { sym: '🏛', name: 'BoB', note: '' },
+            { sym: '🌿', name: 'Canara', note: '' },
+            { sym: '⬡', name: 'Union Bank', note: '' },
+            { sym: '◇', name: 'PNB', note: '' },
+            { sym: '🏦', name: 'Other banks', note: '50+ options' },
+          ],
+        },
+        {
+          title: 'Wallets',
+          icon: '👛',
+          items: [
+            { sym: 'P', name: 'Paytm Wallet', note: '', style: 'font-weight:800;color:#00BAF2;font-family:sans-serif' },
+            { sym: '📦', name: 'Amazon Pay', note: '' },
+            { sym: '🔶', name: 'MobiKwik', note: 'Wallet' },
+            { sym: '⚡', name: 'Freecharge', note: '' },
+            { sym: '📡', name: 'JioMoney', note: '' },
+            { sym: '🛺', name: 'Ola Money', note: '' },
+            { sym: '📶', name: 'Airtel Thanks', note: '' },
+            { sym: '💠', name: 'PhonePe Wallet', note: '' },
+          ],
+        },
+        {
+          title: 'Pay Later & BNPL',
+          icon: '⏳',
+          items: [
+            { sym: '🛋', name: 'LazyPay', note: 'Pay later' },
+            { sym: '🍕', name: 'Slice', note: 'Card + BNPL' },
+            { sym: 'F', name: 'FamPay', note: 'Teens & family', style: 'font-weight:800;color:#6c5ce7;font-family:sans-serif' },
+            { sym: 'S', name: 'Simpl', note: '1-tap checkout', style: 'font-weight:800;color:#8b5cf6' },
+            { sym: 'Z', name: 'ZestMoney', note: 'EMI / BNPL', style: 'font-weight:700;color:#e17055' },
+            { sym: 'Ⓛ', name: 'Liquiloans', note: '' },
+          ],
+        },
+        {
+          title: 'More options',
+          icon: '✨',
+          items: [
+            { sym: '🏪', name: 'Net Banking (all)', note: '' },
+            { sym: '₿', name: 'Crypto', note: 'Where supported' },
+            { sym: '🎁', name: 'Gift card / voucher', note: '' },
+            { sym: '🧾', name: 'Corporate / GST invoice', note: '' },
+          ],
+        },
+      ];
+
+      var root = document.getElementById('methodsRoot');
+      root.hidden = false;
+      var html = '';
+      sections.forEach(function (sec) {
+        html += '<section class="pay-section' + (sec.bankRow ? ' bank-row' : '') + '">';
+        html += '<h2><span>' + sec.icon + '</span> ' + esc(sec.title) + '</h2><div class="pay-grid">';
+        sec.items.forEach(function (it) {
+          var st = it.style ? ' style="' + esc(it.style) + '"' : '';
+          var note = it.note ? '<span class="pay-note">' + esc(it.note) + '</span>' : '';
+          html +=
+            '<button type="button" class="pay-tile" data-method="' +
+            esc(it.name) +
+            '">' +
+            '<span class="pay-sym"' +
+            st +
+            '>' +
+            esc(it.sym) +
+            '</span>' +
+            '<span class="pay-name">' +
+            esc(it.name) +
+            '</span>' +
+            note +
+            '</button>';
+        });
+        html += '</div></section>';
+      });
+      root.innerHTML =
+        html +
+        '<p style="text-align:center;margin-top:28px;font-size:0.85rem;color:var(--muted)">' +
+        '<a href="index.html">← Back to TicketVerse home</a></p>';
+
+      var toast = document.getElementById('demoToast');
+      var tmr;
+      root.querySelectorAll('.pay-tile').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var m = btn.getAttribute('data-method');
+          toast.textContent =
+            'Demo checkout — "' + m + '" selected for ' + data.totalDisplay + '. No real charge.';
+          toast.classList.add('show');
+          clearTimeout(tmr);
+          tmr = setTimeout(function () {
+            toast.classList.remove('show');
+          }, 3200);
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var nb = document.getElementById('navbar');
+      var ham = document.getElementById('payHamburger');
+      var mob = document.getElementById('payMobileMenu');
+      if (ham && mob) {
+        ham.addEventListener('click', function () {
+          var open = !mob.classList.contains('open');
+          ham.classList.toggle('open', open);
+          mob.classList.toggle('open', open);
+          ham.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        mob.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', function () {
+            ham.classList.remove('open');
+            mob.classList.remove('open');
+            ham.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+      window.addEventListener('scroll', function () {
+        if (nb) nb.classList.toggle('scrolled', window.scrollY > 20);
+      });
+    })();
+  </script>
+</body>
+</html>
