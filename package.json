@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node local-server.js",
-    "start": "node local-server.js",
-    "build": "echo 'Build complete'"
+    "start": "node local-server.js"
   },
   "dependencies": {
     "dotenv": "^16.6.1",
